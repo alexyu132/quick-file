@@ -1,0 +1,23 @@
+{
+  "name": "quick-file",
+  "version": "1.0.0",
+  "description": "qr-code-based file transfer webapp",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexyu132/quick-file.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alexyu132/quick-file/issues"
+  },
+  "homepage": "https://github.com/alexyu132/quick-file#readme",
+  "dependencies": {
+    "express": "^4.14.1"
+  }
+}
