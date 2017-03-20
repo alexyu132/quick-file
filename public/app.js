@@ -10,17 +10,16 @@ document.getElementById("file").onchange = function() {
 
 function getS3Request(file) {
   var request = new XMLHttpRequest();
-  request.open("GET", "/sign?name=" + file.name + "&type=" + file.type);
+  request.open("GET", "/sign?name=" + encodeURIComponent(file.name) + "&type=" + encodeURIComponent(file.type));
   request.onreadystatechange = function () {
+
     if(request.readyState == 4) {
       if(request.status == 200) {
         var response = JSON.parse(request.responseText);
 
-        console.log(response.signedRequest + " " + response.url + "\n");
-
         upload(file, response.signedRequest, response.url);
       } else {
-        document.getElementById("file_status").value = "Error getting signed URL.";
+        document.getElementById("file_status").innerHTML = "Error getting signed URL.";
       }
     }
   };
@@ -30,16 +29,18 @@ function getS3Request(file) {
 
 function upload(file, signedRequest, url) {
 
-  document.getElementById("file_status").value = "Uploading...";
 
-  var request = new XMLHttpRequest('PUT', signedRequest);
+  document.getElementById("file_status").innerHTML = "Uploading...";
+
+  var request = new XMLHttpRequest();
+  console.log(signedRequest);
   request.open("PUT", signedRequest);
   request.onreadystatechange = function () {
     if(request.readyState == 4) {
       if(request.status == 200) {
-        document.getElementById("file_status").value = "Upload successful: " + url;
+        document.getElementById("file_status").innerHTML = "Upload successful: " + url;
       } else {
-        document.getElementById("file_status").value = "Error uploading file";
+        document.getElementById("file_status").innerHTML = "Error uploading file: " + request.status;
       }
     }
   };

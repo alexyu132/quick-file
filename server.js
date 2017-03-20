@@ -1,8 +1,8 @@
 var express = require('express');
 var aws = require('aws-sdk');
 
-const AWS_KEY = process.env.AWS_KEY,
-      AWS_SECRET = process.env.AWS_SECRET,
+const AWS_KEY = process.env.AWS_ACCESS_KEY_ID,
+      AWS_SECRET = process.env.SECRET_ACCESS_KEY,
       S3_BUCKET = process.env.BUCKET;
 
 var app = express();
@@ -11,8 +11,9 @@ app.use(express.static('public'));
 
 app.get("/sign", function(req, res) {
   var s3 = new aws.S3();
-  var fileName = req.query.name;
-  var fileType = req.query.type;
+  var fileName = req.query['name'];
+  var fileType = req.query['type'];
+
   var parameters = {
     Bucket: S3_BUCKET,
     Key: fileName,
@@ -32,8 +33,9 @@ app.get("/sign", function(req, res) {
       url: "https://" + S3_BUCKET + ".s3.amazonaws.com/" + fileName
     };
 
-    res.write(JSON.stringify(returnData));
-    res.end();
+    //res.write(JSON.stringify(returnData));
+    //res.end();
+    res.send(returnData);
   });
 });
 
