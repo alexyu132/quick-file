@@ -1,2 +1,2 @@
 # quick-file
-QR code file transfer webapp
+File transfer webapp
