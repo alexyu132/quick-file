@@ -17,7 +17,7 @@ app.get("/sign", function(req, res) {
     Bucket: S3_BUCKET,
     Key: fileName,
     Expires: 60,
-    ContentType = fileType,
+    ContentType : fileType,
     ACL: "public-read"
   };
 
@@ -29,7 +29,7 @@ app.get("/sign", function(req, res) {
 
     var returnData = {
       signedRequest: data,
-      url: "https://" + S3_BUCKET + ".s3.amazonaws.com/" + fileName;
+      url: "https://" + S3_BUCKET + ".s3.amazonaws.com/" + fileName
     };
 
     res.write(JSON.stringify(returnData));
