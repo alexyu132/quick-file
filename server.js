@@ -65,8 +65,6 @@ app.get("/sign", function(req, res) {
     return res.status(400).end();
   }
 
-  console.log(req.query['room']);
-
   if(!getRoomById(req.query['room'])) {
     return res.status(404).end();
   }
@@ -102,7 +100,6 @@ app.get("/receive", function(req,res) {
 });
 
 app.post("/ready", function(req,res) {
-  console.log(req.body);
 
   if(!req.body.room || !req.body.file || !req.body.url) {
     return res.status(400).end();
