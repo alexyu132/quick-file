@@ -1,17 +1,68 @@
-var express = require('express');
-var aws = require('aws-sdk');
+const express = require('express'),
+      aws = require('aws-sdk'),
+      io = require('socket.io'),
+      bodyParser = require('body-parser');
+const S3_BUCKET = process.env.BUCKET;
 
-const AWS_KEY = process.env.AWS_ACCESS_KEY_ID,
-      AWS_SECRET = process.env.SECRET_ACCESS_KEY,
-      S3_BUCKET = process.env.BUCKET;
+// Variables for Express and Socket.IO
+var app = express(), socket;
 
-var app = express();
+// App variables
+var receiving = []; // Array of receiving
 
+aws.config.update({region: 'us-east-1'});
 app.use(express.static('public'));
+app.use(bodyParser.json());
+
+function initRoom(client) {
+  var roomNumber = Math.random() * 10000 | 0, unique;
+
+  do{
+    unique = true;
+    for(var i = 0; i < receiving.length; i++) {
+      if(receiving[i].roomNumber == roomNumber) {
+        unique = false;
+        roomNumber = Math.random() * 10000 | 0;
+        break;
+      }
+    }
+  } while(!unique);
+
+  receiving.push({
+    roomNumber: roomNumber,
+    ioSession: client.id,
+  });
+  return roomNumber;
+}
+
+function getRoomById(roomNumber) {
+  for(var i = 0; i < receiving.length; i++) {
+    if(receiving[i].roomNumber == roomNumber) {
+      return receiving[i];
+    }
+  }
+  return null;
+}
+
+socket = io(app.listen(process.env.PORT || 8080, function() {
+  console.log("Server running at port " + this.address().port);
+}));
+
+socket.on("connection", function(client) {
+  client.emit("id", initRoom(client));
+  client.on("disconnect", function() {
+    for(var i = 0; i < receiving.length; i++) {
+      if(receiving[i].ioSession == client.id) {
+        receiving.splice(i, 1);
+        break;
+      }
+    }
+  });
+});
 
 app.get("/sign", function(req, res) {
-  var s3 = new aws.S3();
-  var fileName = req.query['name'];
+  var s3 = new aws.S3({apiVersion: '2006-03-01', signatureVersion: 'v4'});
+  var fileName = (process.hrtime()[0] * 1e9 + process.hrtime()[1]) + req.query['name'];
   var fileType = req.query['type'];
 
   var parameters = {
@@ -33,12 +84,28 @@ app.get("/sign", function(req, res) {
       url: "https://" + S3_BUCKET + ".s3.amazonaws.com/" + fileName
     };
 
-    //res.write(JSON.stringify(returnData));
-    //res.end();
     res.send(returnData);
   });
 });
 
-app.listen(process.env.PORT || 8080, function() {
-  console.log("Server running at port " + this.address().port);
+app.get("/receive", function(req,res) {
+  res.sendFile("receive.html", {root:__dirname});
+});
+
+app.post("/ready", function(req,res) {
+  console.log(req.body);
+
+  if(!req.body.room || !req.body.file || !req.body.url) {
+    return res.status(400).end();
+  }
+
+  var room = getRoomById(req.body.room);
+
+  if(!room) {
+    return res.status(404).end();
+  }
+
+  socket.to(room.ioSession).emit("file", req.body.file, req.body.url);
+
+  res.end();
 });
