@@ -38,5 +38,5 @@ app.get("/sign", function(req, res) {
 });
 
 app.listen(process.env.PORT || 8080, function() {
-  console.log("Server running at port " + server.address().port);
+  console.log("Server running at port " + this.address().port);
 });
