@@ -14,7 +14,7 @@ app.get("/sign", function(req, res) {
   var fileName = req.query.name;
   var fileType = req.query.type;
   var parameters = {
-    Bucket: S3_BUCKET;
+    Bucket: S3_BUCKET,
     Key: fileName,
     Expires: 60,
     ContentType = fileType,
