@@ -16,8 +16,9 @@ function getS3Request(file) {
     if(request.readyState == 4) {
       if(request.status == 200) {
         var response = JSON.parse(request.responseText);
-
-        upload(file, response.signedRequest, response.url);
+        sendReady(file.name, response.url, document.getElementById("roomNumber").value, function() {
+          upload(file, response.signedRequest, response.url);
+        });
       } else {
         document.getElementById("file_status").innerHTML = "Error getting signed URL.";
       }
@@ -35,7 +36,7 @@ function upload(file, signedRequest, url) {
   request.onreadystatechange = function () {
     if(request.readyState == 4) {
       if(request.status == 200) {
-          sendReady(file.name, url, document.getElementById("roomNumber").value);
+        document.getElementById("file_status").innerHTML = "Upload successful!";
       } else {
         document.getElementById("file_status").innerHTML = "Error uploading file: " + request.status;
       }
@@ -45,7 +46,7 @@ function upload(file, signedRequest, url) {
   request.send(file);
 }
 
-function sendReady(name, url, room) {
+function sendReady(name, url, room, callback) {
 
   var request = new XMLHttpRequest();
   request.open("POST", "/ready");
@@ -53,7 +54,7 @@ function sendReady(name, url, room) {
   request.onreadystatechange = function () {
     if(request.readyState == 4) {
       if(request.status == 200) {
-        document.getElementById("file_status").innerHTML = "Upload successful!";
+        callback();
       } else if(request.status == 404){
         document.getElementById("file_status").innerHTML = "The receiving code entered does not exist.";
       } else {

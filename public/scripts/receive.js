@@ -6,6 +6,6 @@ socket.on("id", function(id) {
 
 socket.on("file", function(name, url) {
   var li = document.createElement("li");
-  li.innerHTML = name + " " + "<a href=" + url + ">Download</a>";
+  li.innerHTML = name + " " + "<a href=" + url + " target=\"_blank\">Download</a>";
   document.getElementById("files").appendChild(li);
 });
