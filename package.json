@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/alexyu132/quick-file#readme",
   "dependencies": {
+    "aws-sdk": "^2.28.0",
     "express": "^4.14.1"
   }
 }
