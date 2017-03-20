@@ -4,8 +4,8 @@ const express = require('express'),
       bodyParser = require('body-parser');
 const S3_BUCKET = process.env.BUCKET;
 
-// Variables for Express and Socket.IO
-var app = express(), socket;
+// Variables for Express, S3 and Socket.IO
+var app = express(), socket, s3 = new aws.S3({apiVersion: '2006-03-01', signatureVersion: 'v4'});
 
 // App variables
 var receiving = []; // Array of receiving
@@ -61,7 +61,16 @@ socket.on("connection", function(client) {
 });
 
 app.get("/sign", function(req, res) {
-  var s3 = new aws.S3({apiVersion: '2006-03-01', signatureVersion: 'v4'});
+  if(!req.query['name'] || !req.query['type'] || !req.query['room']) {
+    return res.status(400).end();
+  }
+
+  console.log(req.query['room']);
+
+  if(!getRoomById(req.query['room'])) {
+    return res.status(404).end();
+  }
+
   var fileName = (process.hrtime()[0] * 1e9 + process.hrtime()[1]) + req.query['name'];
   var fileType = req.query['type'];
 
@@ -81,7 +90,7 @@ app.get("/sign", function(req, res) {
 
     var returnData = {
       signedRequest: data,
-      url: "https://" + S3_BUCKET + ".s3.amazonaws.com/" + fileName
+      url: "https://" + S3_BUCKET + ".s3.amazonaws.com/" + encodeURIComponent(fileName)
     };
 
     res.send(returnData);

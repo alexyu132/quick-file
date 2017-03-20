@@ -1,26 +1,29 @@
 document.getElementById("upload").onclick = function() {
   var file = document.getElementById("file").files[0];
-  if(file != null) {
+  if(file != null && document.getElementById("roomNumber").value) {
     getS3Request(file);
     return;
   }
-
-  alert("No file selected.");
+  if(!document.getElementById("roomNumber").value) {
+    alert("Enter a receiver number.");
+  } else{
+    alert("No file selected.");
+  }
 };
 
 function getS3Request(file) {
   var request = new XMLHttpRequest();
-  request.open("GET", "/sign?name=" + encodeURIComponent(file.name) + "&type=" + encodeURIComponent(file.type));
+  request.open("GET", "/sign?room=" + encodeURIComponent(document.getElementById("roomNumber").value) + "&name=" + encodeURIComponent(file.name) + "&type=" + encodeURIComponent(file.type));
   request.onreadystatechange = function () {
 
     if(request.readyState == 4) {
       if(request.status == 200) {
         var response = JSON.parse(request.responseText);
-        sendReady(file.name, response.url, document.getElementById("roomNumber").value, function() {
-          upload(file, response.signedRequest, response.url);
-        });
+        upload(file, response.signedRequest, response.url);
+      } else if(request.status == 404) {
+        document.getElementById("file_status").innerHTML = "The receiving code entered does not exist.";
       } else {
-        document.getElementById("file_status").innerHTML = "Error getting signed URL.";
+        document.getElementById("file_status").innerHTML = "Error uploading file: " + request.status;
       }
     }
   };
@@ -36,7 +39,7 @@ function upload(file, signedRequest, url) {
   request.onreadystatechange = function () {
     if(request.readyState == 4) {
       if(request.status == 200) {
-        document.getElementById("file_status").innerHTML = "Upload successful!";
+          sendReady(file.name, url, document.getElementById("roomNumber").value);
       } else {
         document.getElementById("file_status").innerHTML = "Error uploading file: " + request.status;
       }
@@ -46,7 +49,7 @@ function upload(file, signedRequest, url) {
   request.send(file);
 }
 
-function sendReady(name, url, room, callback) {
+function sendReady(name, url, room) {
 
   var request = new XMLHttpRequest();
   request.open("POST", "/ready");
@@ -54,7 +57,7 @@ function sendReady(name, url, room, callback) {
   request.onreadystatechange = function () {
     if(request.readyState == 4) {
       if(request.status == 200) {
-        callback();
+        document.getElementById("file_status").innerHTML = "Upload successful!";
       } else if(request.status == 404){
         document.getElementById("file_status").innerHTML = "The receiving code entered does not exist.";
       } else {
