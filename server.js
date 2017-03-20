@@ -15,7 +15,7 @@ app.use(express.static('public'));
 app.use(bodyParser.json());
 
 function initRoom(client) {
-  var roomNumber = Math.random() * 10000 | 0, unique;
+  var roomNumber = 1 + Math.random() * 100000 | 0, unique;
 
   do{
     unique = true;
@@ -32,6 +32,9 @@ function initRoom(client) {
     roomNumber: roomNumber,
     ioSession: client.id,
   });
+
+  console.log("Receiving user connected with number " + roomNumber);
+
   return roomNumber;
 }
 
@@ -53,6 +56,7 @@ socket.on("connection", function(client) {
   client.on("disconnect", function() {
     for(var i = 0; i < receiving.length; i++) {
       if(receiving[i].ioSession == client.id) {
+        console.log("Removing " + receiving[i].roomNumber);
         receiving.splice(i, 1);
         break;
       }
