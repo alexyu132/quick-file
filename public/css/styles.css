@@ -1,0 +1,25 @@
+body {
+  padding:0px; margin:0px;
+  text-align: center;
+  font-family: "Helvetica", "Arial", sans-serif;
+  font-size: 120%;
+  letter-spacing: -0.03em;
+}
+
+h1 {
+  font-size: 250%;
+  margin:0;
+}
+
+button {
+    background-color: #555555;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
