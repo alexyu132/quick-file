@@ -13,7 +13,7 @@ document.getElementById("upload").onclick = function() {
 
 function getS3Request(file) {
     var request = new XMLHttpRequest();
-    request.open("GET", "/sign?room=" + encodeURIComponent(document.getElementById("roomNumber").value) + "&name=" + encodeURIComponent(file.name) + "&type=" + encodeURIComponent("binary/octet-stream"));
+    request.open("GET", "/sign?room=" + encodeURIComponent(document.getElementById("roomNumber").value) + "&name=" + encodeURIComponent(file.name) + "&type=" + encodeURIComponent((file.type || "binary/octet-stream")));
     request.onreadystatechange = function() {
 
         if (request.readyState == 4) {
@@ -36,6 +36,7 @@ function upload(file, signedRequest, url) {
 
     var request = new XMLHttpRequest();
     request.open("PUT", signedRequest);
+    request.setRequestHeader("Content-Disposition","attachment");
     request.onreadystatechange = function() {
         if (request.readyState == 4) {
             if (request.status == 200) {
