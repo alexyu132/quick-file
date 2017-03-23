@@ -1,7 +1,8 @@
 const express = require('express'),
       aws = require('aws-sdk'),
       io = require('socket.io'),
-      bodyParser = require('body-parser');
+      bodyParser = require('body-parser'),
+      shortid = require('shortid');
 const S3_BUCKET = process.env.BUCKET;
 
 // Variables for Express, S3 and Socket.IO
@@ -31,6 +32,7 @@ function initRoom(client) {
   receiving.push({
     roomNumber: roomNumber,
     ioSession: client.id,
+    prospectiveFiles: []  // Array of files to delete when receiver disconnects
   });
 
   console.log("Receiving user connected with number " + roomNumber);
@@ -47,6 +49,19 @@ function getRoomById(roomNumber) {
   return null;
 }
 
+function deleteFile(name) {
+  console.log("Deleting "+name);
+
+  s3.deleteObject({
+      Bucket: S3_BUCKET,
+      Key: name
+  }, function(err, data) {
+    if(err) {
+      console.log(err);
+    }
+  });
+}
+
 socket = io(app.listen(process.env.PORT || 8080, function() {
   console.log("Server running at port " + this.address().port);
 }));
@@ -57,6 +72,9 @@ socket.on("connection", function(client) {
     for(var i = 0; i < receiving.length; i++) {
       if(receiving[i].ioSession == client.id) {
         console.log("Removing " + receiving[i].roomNumber);
+        for(var j = 0; j < receiving[i].prospectiveFiles.length; j++) {
+          deleteFile(receiving[i].prospectiveFiles[j]);
+        }
         receiving.splice(i, 1);
         break;
       }
@@ -73,7 +91,7 @@ app.get("/sign", function(req, res) {
     return res.status(404).end();
   }
 
-  var fileName = (process.hrtime()[0] * 1e9 + process.hrtime()[1]) + req.query['name'];
+  var fileName = shortid.generate() + "_" + req.query['name'];
   var fileType = req.query['type'];
 
   var parameters = {
@@ -87,10 +105,12 @@ app.get("/sign", function(req, res) {
   s3.getSignedUrl("putObject", parameters, function (err, data) {
     if(err) {
       console.log(err);
-      return res.end();
+      return res.status(500).end();
     }
 
-    var returnData = {
+    getRoomById(req.query['room']).prospectiveFiles.push(fileName);
+
+    const returnData = {
       signedRequest: data,
       url: "https://" + S3_BUCKET + ".s3.amazonaws.com/" + encodeURIComponent(fileName)
     };
