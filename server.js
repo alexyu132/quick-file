@@ -103,7 +103,7 @@ app.get("/receive", function(req,res) {
   res.sendFile("receive.html", {root:__dirname});
 });
 
-app.get("/upload", function(req,res) {
+app.get("/send", function(req,res) {
   res.sendFile("upload.html", {root:__dirname});
 });
 app.post("/ready", function(req,res) {

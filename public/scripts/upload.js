@@ -35,6 +35,10 @@ function upload(file, signedRequest, url) {
     document.getElementById("file_status").innerHTML = "Uploading...";
 
     var request = new XMLHttpRequest();
+    request.upload.addEventListener("progress", function(e) {
+      document.getElementById("file_status").innerHTML = "Uploading..." + (100*e.loaded/e.total | 0) + "%";
+    });
+
     request.open("PUT", signedRequest);
     request.setRequestHeader("Content-Disposition","attachment");
     request.onreadystatechange = function() {
